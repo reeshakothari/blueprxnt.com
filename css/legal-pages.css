@@ -1,0 +1,157 @@
+/* ========================================
+   LEGAL PAGES - STYLING
+   ======================================== */
+
+/* Hero Section */
+.legal-hero {
+    padding: 5rem 0 3rem;
+    background-color: #0a0a0a;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .legal-hero {
+        padding: 6rem 0 4rem;
+    }
+}
+
+.legal-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .legal-title {
+        font-size: 3rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .legal-title {
+        font-size: 3.5rem;
+    }
+}
+
+.legal-date {
+    font-size: 1rem;
+    color: #a1a1aa;
+}
+
+@media (min-width: 768px) {
+    .legal-date {
+        font-size: 1.125rem;
+    }
+}
+
+/* Content Section */
+.legal-content {
+    padding: 3rem 0 5rem;
+    background-color: #0a0a0a;
+}
+
+@media (min-width: 768px) {
+    .legal-content {
+        padding: 4rem 0 6rem;
+    }
+}
+
+.legal-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.legal-intro {
+    font-size: 1.125rem;
+    color: #a1a1aa;
+    line-height: 1.75;
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background-color: #18181b;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .legal-intro {
+        font-size: 1.25rem;
+        padding: 2rem;
+    }
+}
+
+.legal-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .legal-heading {
+        font-size: 1.75rem;
+    }
+}
+
+.legal-text {
+    font-size: 1rem;
+    color: #a1a1aa;
+    line-height: 1.75;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .legal-text {
+        font-size: 1.125rem;
+    }
+}
+
+.legal-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 2rem 0;
+}
+
+.legal-list li {
+    font-size: 1rem;
+    color: #a1a1aa;
+    line-height: 1.75;
+    padding-left: 2rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .legal-list li {
+        font-size: 1.125rem;
+    }
+}
+
+.legal-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #0ea5e9;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Footer Enhancement for Legal Pages */
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
