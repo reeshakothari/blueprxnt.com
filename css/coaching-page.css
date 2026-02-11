@@ -15,9 +15,10 @@
 }
 
 .coaching-hero-title {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     color: white;
     margin-bottom: 2rem;
     text-align: center;
@@ -25,13 +26,13 @@
 
 @media (min-width: 768px) {
     .coaching-hero-title {
-        font-size: 3.5rem;
+        font-size: 3.75rem;
     }
 }
 
 @media (min-width: 1024px) {
     .coaching-hero-title {
-        font-size: 4rem;
+        font-size: 4.5rem;
     }
 }
 
@@ -80,18 +81,13 @@
 }
 
 .levels-label {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: #0ea5e9;
     text-align: left;
     margin-bottom: 4rem;
-}
-
-@media (min-width: 768px) {
-    .levels-label {
-        font-size: 1.5rem;
-    }
 }
 
 .coaching-tier-card {
@@ -441,29 +437,25 @@
 
 .results-label {
     font-size: 0.875rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: #0ea5e9;
     text-align: left;
     margin-bottom: 1.5rem;
 }
 
 .results-heading {
-    font-size: 2rem;
+    font-size: 1.875rem;
     font-weight: 700;
     color: white;
     text-align: left;
     margin-bottom: 3rem;
-    line-height: 1.3;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 @media (min-width: 768px) {
-    .results-heading {
-        font-size: 2.5rem;
-    }
-}
-
-@media (min-width: 1024px) {
     .results-heading {
         font-size: 3rem;
     }
@@ -603,22 +595,23 @@
 }
 
 .cta-heading {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-weight: 700;
     color: white;
     margin-bottom: 1.5rem;
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 @media (min-width: 768px) {
     .cta-heading {
-        font-size: 3rem;
+        font-size: 3.75rem;
     }
 }
 
 @media (min-width: 1024px) {
     .cta-heading {
-        font-size: 3.5rem;
+        font-size: 4.5rem;
     }
 }
 

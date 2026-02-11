@@ -16,21 +16,23 @@
 }
 
 .legal-title {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-weight: 700;
     color: white;
     margin-bottom: 1rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 @media (min-width: 768px) {
     .legal-title {
-        font-size: 3rem;
+        font-size: 3.75rem;
     }
 }
 
 @media (min-width: 1024px) {
     .legal-title {
-        font-size: 3.5rem;
+        font-size: 4.5rem;
     }
 }
 

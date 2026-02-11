@@ -152,9 +152,9 @@ section {
 
 /* Section Labels */
 .section-label {
-    font-size: 1.1rem;
+    font-size: 0.875rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
     margin-bottom: 1.5rem;
 }
 
@@ -197,16 +197,16 @@ section {
 }
 
 .trusted-heading {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
     color: #0ea5e9;
     margin-bottom: 2.5rem;
 }
 
 @media (min-width: 768px) {
     .trusted-heading {
-        font-size: 1.1rem;
+        font-size: 0.875rem;
     }
 }
 
