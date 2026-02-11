@@ -15,15 +15,12 @@
 }
 
 .hero-background {
-    background-image: url('https://us.chat-img.sintra.ai/e3b7c1db-bb00-4d4a-b457-80c5981a5d52/9a214b24-9d30-48bb-bbf7-57d19a7313b6/image.png?w=1184&h=864');
-    background-size: cover;
-    background-position: center;
-    opacity: 0.4;
+    background: none;
+    opacity: 1;
 }
 
 .hero-background::before {
-    background: linear-gradient(180deg, rgba(10, 10, 10, 0.3) 0%, rgba(10, 10, 10, 0.9) 100%);
-    animation: none;
+    display: none;
 }
 
 .hero-tagline {
