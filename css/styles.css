@@ -180,26 +180,10 @@ nav a {
     color: var(--color-text-primary);
     text-decoration: none;
     transition: color var(--transition-base);
-    display: flex;
-    align-items: center;
-}
-
-.logo img {
-    height: 50px;
-    width: auto;
-    display: block;
-    max-width: 100%;
-    object-fit: contain;
-}
-
-@media (min-width: 768px) {
-    .logo img {
-        height: 60px;
-    }
 }
 
 .logo:hover {
-    opacity: 0.8;
+    color: var(--color-primary);
 }
 
 .mobile-menu-toggle {
