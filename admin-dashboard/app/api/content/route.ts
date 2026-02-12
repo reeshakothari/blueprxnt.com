@@ -174,7 +174,7 @@ async function updateHeroSection(data: any) {
   );
 
   updatedHtml = updatedHtml.replace(
-    /<h1 class="hero-title">.*?<\/h1>/s,
+    /<h1 class="hero-title">[\s\S]*?<\/h1>/,
     `<h1 class="hero-title">${data.title}</h1>`
   );
 

@@ -7,6 +7,7 @@ export interface ToastProps {
   title?: string;
   description?: string;
   action?: ToastActionElement;
+  variant?: 'default' | 'destructive';
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
