@@ -4,8 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { content } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import fs from 'fs/promises';
-import path from 'path';
+import { getFileContent, updateFile, updateMultipleFiles } from '@/lib/github';
 
 // GET /api/content - Get all content or specific section
 export async function GET(request: NextRequest) {
@@ -98,7 +97,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// POST /api/content/publish - Publish content to live site
+// POST /api/content/publish - Publish content to live site via GitHub
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -123,7 +122,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update published status
+    // Update published status in database
     await db
       .update(content)
       .set({
@@ -132,12 +131,12 @@ export async function POST(request: NextRequest) {
       })
       .where(eq(content.section, section));
 
-    // Generate/update the actual HTML file
+    // Publish to live website via GitHub API
     await updateLiveWebsite(section, contentData.data);
 
     return NextResponse.json({
       success: true,
-      message: 'Content published successfully',
+      message: 'Content published successfully. Site will redeploy in ~30 seconds.',
     });
   } catch (error) {
     console.error('Error publishing content:', error);
@@ -148,70 +147,70 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to update live website files
+// Helper function to update live website files via GitHub API
 async function updateLiveWebsite(section: string, data: any) {
-  // Path to the main website directory
-  const websitePath = path.join(process.cwd(), '..');
-
   switch (section) {
     case 'hero':
-      await updateHeroSection(websitePath, data);
+      await updateHeroSection(data);
       break;
     case 'about':
-      await updateAboutSection(websitePath, data);
+      await updateAboutSection(data);
       break;
     case 'footer':
-      await updateFooterSection(websitePath, data);
+      await updateFooterSection(data);
       break;
     // Add more sections as needed
   }
 }
 
-async function updateHeroSection(websitePath: string, data: any) {
-  const indexPath = path.join(websitePath, 'index.html');
-  let html = await fs.readFile(indexPath, 'utf-8');
+async function updateHeroSection(data: any) {
+  const { content: html } = await getFileContent('index.html');
 
-  // Update hero content using regex or DOM manipulation
-  // This is a simplified example - you'd want more robust parsing
-  html = html.replace(
+  let updatedHtml = html;
+
+  updatedHtml = updatedHtml.replace(
     /<p class="hero-tagline">.*?<\/p>/,
     `<p class="hero-tagline">${data.label}</p>`
   );
 
-  html = html.replace(
+  updatedHtml = updatedHtml.replace(
     /<h1 class="hero-title">.*?<\/h1>/s,
     `<h1 class="hero-title">${data.title}</h1>`
   );
 
-  html = html.replace(
+  updatedHtml = updatedHtml.replace(
     /<p class="hero-subtitle">.*?<\/p>/,
     `<p class="hero-subtitle">${data.subtitle}</p>`
   );
 
-  await fs.writeFile(indexPath, html, 'utf-8');
+  await updateFile('index.html', updatedHtml, `Update hero section via admin dashboard`);
 }
 
-async function updateAboutSection(websitePath: string, data: any) {
-  const aboutPath = path.join(websitePath, 'about.html');
-  let html = await fs.readFile(aboutPath, 'utf-8');
+async function updateAboutSection(data: any) {
+  const { content: html } = await getFileContent('about.html');
 
-  // Similar updates for about page
+  let updatedHtml = html;
+  // Apply about section updates based on data
   // ... implementation here
 
-  await fs.writeFile(aboutPath, html, 'utf-8');
+  await updateFile('about.html', updatedHtml, `Update about section via admin dashboard`);
 }
 
-async function updateFooterSection(websitePath: string, data: any) {
-  // Update footer in all HTML files
+async function updateFooterSection(data: any) {
+  // Footer appears on all pages — update all files in a single commit
   const files = ['index.html', 'about.html', 'coaching.html', 'contact.html', 'system.html'];
 
-  for (const file of files) {
-    const filePath = path.join(websitePath, file);
-    let html = await fs.readFile(filePath, 'utf-8');
+  const updatedFiles: { path: string; content: string }[] = [];
 
-    // Update footer content
+  for (const file of files) {
+    const { content: html } = await getFileContent(file);
+
+    let updatedHtml = html;
+    // Apply footer updates based on data
     // ... implementation here
 
-    await fs.writeFile(filePath, html, 'utf-8');
+    updatedFiles.push({ path: file, content: updatedHtml });
   }
+
+  await updateMultipleFiles(updatedFiles, `Update footer section via admin dashboard`);
 }

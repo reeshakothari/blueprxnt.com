@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const IMAGES_DIR = path.resolve(process.cwd(), '..', 'images');
+import { uploadImageToGitHub } from '@/lib/github';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,24 +10,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
     }
 
-    // Ensure images directory exists
-    if (!fs.existsSync(IMAGES_DIR)) {
-      fs.mkdirSync(IMAGES_DIR, { recursive: true });
-    }
-
     // Generate unique filename
     const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const fileName = `${timestamp}-${originalName}`;
-    const filePath = path.join(IMAGES_DIR, fileName);
 
-    // Convert file to buffer and save
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    fs.writeFileSync(filePath, buffer);
 
-    // Return the relative path for HTML
-    const relativePath = `images/${fileName}`;
+    // Upload to GitHub repo (commits the image file)
+    const relativePath = await uploadImageToGitHub(
+      fileName,
+      buffer,
+      `Upload image: ${originalName} via admin dashboard`
+    );
 
     return NextResponse.json({
       success: true,

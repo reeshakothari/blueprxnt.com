@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const SITE_ROOT = path.resolve(process.cwd(), '..');
+import { getFileContent, updateMultipleFiles } from '@/lib/github';
 
 // All scannable HTML files with display names
 const HTML_FILES = [
@@ -86,7 +83,6 @@ function scanTextFields(html: string, fileName: string, sections: { name: string
   const fields: ScannedField[] = [];
   const classCount: Record<string, number> = {};
 
-  // Find all elements with class attributes that contain text
   const tagPattern = EDITABLE_TAGS.join('|');
   const elementRegex = new RegExp(
     `<(${tagPattern})([^>]*class="([^"]+)"[^>]*)>([\\s\\S]*?)<\\/\\1>`,
@@ -100,20 +96,16 @@ function scanTextFields(html: string, fileName: string, sections: { name: string
     const rawContent = match[4];
     const pos = match.index;
 
-    // Get the primary class (first one)
     const classes = classAttr.split(/\s+/).filter(c => c.length > 0);
     const primaryClass = classes[0];
 
     if (!primaryClass) continue;
     if (SKIP_CLASSES.some(sc => classes.includes(sc))) continue;
 
-    // Extract clean text (strip inner tags)
     let text = rawContent.replace(/<[^>]+>/g, '').trim().replace(/\s+/g, ' ');
 
-    // Skip empty or very short content, and skip if too long (likely a container)
     if (text.length < 2 || text.length > 500) continue;
 
-    // Track occurrences of same class
     const classKey = `${fileName}:${primaryClass}`;
     classCount[classKey] = (classCount[classKey] || 0) + 1;
     const occurrence = classCount[classKey];
@@ -142,7 +134,6 @@ function scanImages(html: string, fileName: string, sections: { name: string; po
   const images: ScannedImage[] = [];
   const srcCount: Record<string, number> = {};
 
-  // Match <img> tags with src and alt attributes
   const imgRegex = /<img\s+[^>]*src="([^"]+)"[^>]*alt="([^"]*)"[^>]*>/gi;
 
   let match;
@@ -151,10 +142,8 @@ function scanImages(html: string, fileName: string, sections: { name: string; po
     const alt = match[2];
     const pos = match.index;
 
-    // Skip logo
     if (src.includes('logo.png')) continue;
 
-    // Track occurrences of same src
     const srcKey = `${fileName}:${src}`;
     srcCount[srcKey] = (srcCount[srcKey] || 0) + 1;
     const occurrence = srcCount[srcKey];
@@ -182,7 +171,6 @@ function scanTestimonials(html: string, fileName: string, sections: { name: stri
   const testimonials: ScannedTestimonial[] = [];
   let occurrence = 0;
 
-  // Match testimonial boxes with all their parts
   const testimonialRegex = /<div\s+class="testimonial-box"[^>]*>([\s\S]*?)<\/div>\s*(?=<div\s+class="testimonial-box"|<\/div>)/gi;
 
   let match;
@@ -190,19 +178,15 @@ function scanTestimonials(html: string, fileName: string, sections: { name: stri
     const content = match[1];
     const pos = match.index;
 
-    // Extract badge
     const badgeMatch = content.match(/<span\s+class="testimonial-badge"[^>]*>([\s\S]*?)<\/span>/i);
     const badge = badgeMatch ? badgeMatch[1].trim() : '';
 
-    // Extract text
     const textMatch = content.match(/<p\s+class="testimonial-text"[^>]*>([\s\S]*?)<\/p>/i);
     const text = textMatch ? textMatch[1].replace(/<[^>]+>/g, '').trim() : '';
 
-    // Extract author
     const authorMatch = content.match(/<p\s+class="testimonial-author"[^>]*>([\s\S]*?)<\/p>/i);
     const author = authorMatch ? authorMatch[1].trim() : '';
 
-    // Extract position
     const positionMatch = content.match(/<p\s+class="testimonial-position"[^>]*>([\s\S]*?)<\/p>/i);
     const position = positionMatch ? positionMatch[1].trim() : '';
 
@@ -244,10 +228,8 @@ function replaceByClassOccurrence(
     count++;
     if (count !== occurrence) return fullMatch;
 
-    // Check if content has inner HTML tags
     const hasInnerTags = /<[^>]+>/.test(content);
     if (hasInnerTags) {
-      // Replace just the text nodes, preserve HTML structure
       let replaced = false;
       const newContent = content.replace(/^(\s*)([^<]+)/, (_: string, ws: string, _txt: string) => {
         replaced = true;
@@ -259,42 +241,6 @@ function replaceByClassOccurrence(
 
     return `${openTag}${newText}${closeTag}`;
   });
-}
-
-// GET - Scan all HTML files and return structured content
-export async function GET() {
-  try {
-    const allContent: ScannedContent[] = [];
-
-    for (const { file, name } of HTML_FILES) {
-      const filePath = path.join(SITE_ROOT, file);
-      try {
-        const html = fs.readFileSync(filePath, 'utf-8');
-        const sections = detectSections(html);
-
-        const textFields = scanTextFields(html, file, sections);
-        const images = scanImages(html, file, sections);
-        const testimonials = scanTestimonials(html, file, sections);
-
-        allContent.push(...textFields, ...images, ...testimonials);
-      } catch (e) {
-        // File not found, skip
-      }
-    }
-
-    // Group by file and section
-    const grouped: Record<string, Record<string, ScannedContent[]>> = {};
-    for (const item of allContent) {
-      const pageName = HTML_FILES.find(f => f.file === item.file)?.name || item.file;
-      if (!grouped[pageName]) grouped[pageName] = {};
-      if (!grouped[pageName][item.section]) grouped[pageName][item.section] = [];
-      grouped[pageName][item.section].push(item);
-    }
-
-    return NextResponse.json({ success: true, content: allContent, grouped });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
 }
 
 // Replace image src and alt
@@ -329,7 +275,6 @@ function replaceTestimonial(
     count++;
     if (count !== occurrence) return fullMatch;
 
-    // Replace each part
     let updated = content;
     updated = updated.replace(
       /(<span\s+class="testimonial-badge"[^>]*>)([\s\S]*?)(<\/span>)/i,
@@ -352,7 +297,42 @@ function replaceTestimonial(
   });
 }
 
-// POST - Publish changes to HTML files
+// GET - Scan all HTML files from GitHub and return structured content
+export async function GET() {
+  try {
+    const allContent: ScannedContent[] = [];
+
+    for (const { file } of HTML_FILES) {
+      try {
+        const { content: html } = await getFileContent(file);
+        const sections = detectSections(html);
+
+        const textFields = scanTextFields(html, file, sections);
+        const images = scanImages(html, file, sections);
+        const testimonials = scanTestimonials(html, file, sections);
+
+        allContent.push(...textFields, ...images, ...testimonials);
+      } catch (e) {
+        // File not found on GitHub, skip
+      }
+    }
+
+    // Group by file and section
+    const grouped: Record<string, Record<string, ScannedContent[]>> = {};
+    for (const item of allContent) {
+      const pageName = HTML_FILES.find(f => f.file === item.file)?.name || item.file;
+      if (!grouped[pageName]) grouped[pageName] = {};
+      if (!grouped[pageName][item.section]) grouped[pageName][item.section] = [];
+      grouped[pageName][item.section].push(item);
+    }
+
+    return NextResponse.json({ success: true, content: allContent, grouped });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+// POST - Publish changes to HTML files via GitHub API
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -368,7 +348,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid changes format' }, { status: 400 });
     }
 
-    // Group by file
+    // Group changes by file
     const byFile: Record<string, typeof changes> = {};
     for (const change of changes) {
       if (!byFile[change.file]) byFile[change.file] = [];
@@ -376,13 +356,13 @@ export async function POST(request: NextRequest) {
     }
 
     const results: Record<string, number> = {};
+    const updatedFiles: { path: string; content: string }[] = [];
 
     for (const [file, fileChanges] of Object.entries(byFile)) {
-      const filePath = path.join(SITE_ROOT, file);
-
       let html: string;
       try {
-        html = fs.readFileSync(filePath, 'utf-8');
+        const { content: fileContent } = await getFileContent(file);
+        html = fileContent;
       } catch (e) {
         continue;
       }
@@ -397,11 +377,24 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      fs.writeFileSync(filePath, html, 'utf-8');
+      updatedFiles.push({ path: file, content: html });
       results[file] = fileChanges.length;
     }
 
-    return NextResponse.json({ success: true, results });
+    // Commit all file changes in a single commit via GitHub API
+    if (updatedFiles.length > 0) {
+      const changedPages = Object.keys(results).join(', ');
+      await updateMultipleFiles(
+        updatedFiles,
+        `Update content on ${changedPages} via admin dashboard`
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      results,
+      message: 'Changes published. Site will redeploy in ~30 seconds.',
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
