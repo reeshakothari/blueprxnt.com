@@ -49,6 +49,14 @@ const defaultContent: ContentField[] = [
 // GET - Retrieve content from Firestore
 export async function GET() {
   try {
+    if (!adminDb) {
+      console.warn('Firebase Admin DB is not initialized, returning default content');
+      return NextResponse.json({
+        success: true,
+        content: defaultContent
+      });
+    }
+
     const contentRef = adminDb.collection('siteContent').doc('homepage');
     const doc = await contentRef.get();
 
@@ -78,6 +86,13 @@ export async function GET() {
 // POST - Save content to Firestore
 export async function POST(request: NextRequest) {
   try {
+    if (!adminDb) {
+      return NextResponse.json({
+        success: false,
+        error: 'Firebase Admin DB is not initialized'
+      }, { status: 503 });
+    }
+
     const body = await request.json();
     const { fields } = body as { fields: ContentField[] };
 

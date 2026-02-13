@@ -42,6 +42,11 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Get user details from Firebase Admin
+          if (!adminAuth) {
+            console.error('Firebase Admin Auth is not initialized');
+            return null;
+          }
+
           const firebaseUser = await adminAuth.getUserByEmail(email);
 
           // Check if user has admin custom claim

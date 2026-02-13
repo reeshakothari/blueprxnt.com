@@ -40,6 +40,11 @@ const notForItems = ['Quick fixes', 'Hacks', 'Generic plans'];
 // Fetch dynamic content from Firestore
 async function getContent() {
   try {
+    if (!adminDb) {
+      console.warn('Firebase Admin DB is not initialized');
+      return [];
+    }
+
     const contentRef = adminDb.collection('siteContent').doc('homepage');
     const doc = await contentRef.get();
 
